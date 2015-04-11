@@ -12,7 +12,7 @@ func init() {
 	}
 }
 
-func GetBroadcastManager() *BroadcastManager {
+func Global() *BroadcastManager {
 	return globalBroadcastManager
 }
 
