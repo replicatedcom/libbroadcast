@@ -1,4 +1,4 @@
-package libbroadcast
+package eventmanager
 
 var globalBroadcastManager *BroadcastManager
 
@@ -28,7 +28,7 @@ func (broadcastManager *BroadcastManager) CreateBroadcaster(name string) *Broadc
 }
 
 func (broadcastManager *BroadcastManager) GetBroadcaster(name string) *Broadcaster {
-	return broadcastManager.broadcasters[name]
+	return broadcastManager.CreateBroadcaster(name)
 }
 
 func (broadcastManager *BroadcastManager) Destroy(name string) {
