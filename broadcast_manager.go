@@ -1,4 +1,4 @@
-package eventmanager
+package libbroadcast
 
 var globalBroadcastManager *BroadcastManager
 

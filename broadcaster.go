@@ -1,4 +1,4 @@
-package eventmanager
+package libbroadcast
 
 type Broadcaster struct {
 	listeners map[string]chan interface{}
