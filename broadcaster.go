@@ -1,45 +1,68 @@
 package libbroadcast
 
+import (
+	"errors"
+	"sync"
+)
+
+var (
+	ChannelExistsError   = errors.New("broadcast channel exists")
+	ChannelNotFoundError = errors.New("broadcast channel not found")
+)
+
 type Broadcaster struct {
-	listeners map[string]chan interface{}
+	channels map[string]broadcastChan
+	mu       sync.Mutex
 }
 
 func newBroadcaster() *Broadcaster {
 	return &Broadcaster{
-		listeners: make(map[string]chan interface{}),
+		channels: make(map[string]broadcastChan),
 	}
 }
 
-func (broadcaster *Broadcaster) GetNextMessage(id string, onBroadcast func(interface{})) {
-	listener := broadcaster.GetChan(id)
-	go func() {
-		data := <-listener
-		broadcaster.RemoveListener(id)
-		onBroadcast(data)
-	}()
+func (broadcaster *Broadcaster) CreateChan(id string) (broadcastChan, error) {
+	broadcaster.mu.Lock()
+	defer broadcaster.mu.Unlock()
+
+	if _, ok := broadcaster.channels[id]; ok {
+		return nil, ChannelExistsError
+	}
+	broadcaster.channels[id] = newBroadcastChan()
+	return broadcaster.channels[id], nil
 }
 
-func (broadcaster *Broadcaster) GetNextMessageSynchronously(id string) interface{} {
-	listener := broadcaster.GetChan(id)
-	data := <-listener
-	broadcaster.RemoveListener(id)
-	return data
+func (broadcaster *Broadcaster) GetChan(id string) (broadcastChan, error) {
+	broadcaster.mu.Lock()
+	defer broadcaster.mu.Unlock()
+
+	if ch, ok := broadcaster.channels[id]; ok {
+		return ch, nil
+	}
+	return nil, ChannelNotFoundError
 }
 
-func (broadcaster *Broadcaster) GetChan(id string) chan interface{} {
-	listener := make(chan interface{}, 1)
-	broadcaster.listeners[id] = listener
-	return listener
-}
+func (broadcaster *Broadcaster) RemoveChan(id string) {
+	broadcaster.mu.Lock()
+	defer broadcaster.mu.Unlock()
 
-func (broadcaster *Broadcaster) RemoveListener(id string) {
-	delete(broadcaster.listeners, id)
+	if ch, ok := broadcaster.channels[id]; ok {
+		close(ch)
+		delete(broadcaster.channels, id)
+	}
 }
 
 func (broadcaster *Broadcaster) Send(data interface{}) {
-	for _, listener := range broadcaster.listeners {
-		go func(l chan interface{}) {
-			l <- data
-		}(listener)
+	broadcaster.mu.Lock()
+	defer broadcaster.mu.Unlock()
+
+	for _, ch := range broadcaster.channels {
+		go func(c broadcastChan) {
+			defer func() {
+				// Prevent error sending on closed channel race condition
+				recover()
+			}()
+			c <- data
+		}(ch)
 	}
 }
