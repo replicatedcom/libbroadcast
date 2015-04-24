@@ -1,5 +1,9 @@
 package libbroadcast
 
+import (
+	"github.com/replicatedcom/replicated/log"
+)
+
 type Broadcaster struct {
 	listeners map[string]chan interface{}
 }
@@ -19,13 +23,6 @@ func (broadcaster *Broadcaster) GetNextMessage(id string, onBroadcast func(inter
 	}()
 }
 
-func (broadcaster *Broadcaster) GetNextMessageSynchronously(id string) interface{} {
-	listener := broadcaster.GetChan(id)
-	data := <-listener
-	broadcaster.RemoveListener(id)
-	return data
-}
-
 func (broadcaster *Broadcaster) GetChan(id string) chan interface{} {
 	listener := make(chan interface{}, 1)
 	broadcaster.listeners[id] = listener
@@ -37,9 +34,13 @@ func (broadcaster *Broadcaster) RemoveListener(id string) {
 }
 
 func (broadcaster *Broadcaster) Send(data interface{}) {
-	for _, listener := range broadcaster.listeners {
-		go func(l chan interface{}) {
+	log.Log.Debug("Broadcasting data to all listeners (there are %d)", len(broadcaster.listeners))
+
+	for id, listener := range broadcaster.listeners {
+		go func(i string, l chan interface{}) {
+			log.Log.Debug(" -> Delivering to listener %s", i)
 			l <- data
-		}(listener)
+			log.Log.Debug(" -> Delivered to listener %s", i)
+		}(id, listener)
 	}
 }
