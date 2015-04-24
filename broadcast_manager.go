@@ -1,5 +1,9 @@
 package libbroadcast
 
+import (
+	"github.com/replicatedcom/replicated/log"
+)
+
 var globalBroadcastManager *BroadcastManager
 
 type BroadcastManager struct {
@@ -17,6 +21,7 @@ func Global() *BroadcastManager {
 }
 
 func (broadcastManager *BroadcastManager) CreateBroadcaster(name string) *Broadcaster {
+	log.Log.Debug("creating broadcaster named %s", name)
 	// don't allow duplicated names to be created (since that will be a bad situation)
 	if b, ok := broadcastManager.broadcasters[name]; ok {
 		return b
