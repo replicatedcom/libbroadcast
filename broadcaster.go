@@ -34,8 +34,6 @@ func (broadcaster *Broadcaster) RemoveListener(id string) {
 }
 
 func (broadcaster *Broadcaster) Send(data interface{}) {
-	log.Printf("Broadcasting data to all listeners (there are %d)", len(broadcaster.listeners))
-
 	for id, listener := range broadcaster.listeners {
 		go func(i string, l chan interface{}) {
 			log.Printf(" -> Delivering to listener %s", i)

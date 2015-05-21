@@ -21,7 +21,6 @@ func Global() *BroadcastManager {
 }
 
 func (broadcastManager *BroadcastManager) CreateBroadcaster(name string) *Broadcaster {
-	log.Printf("creating broadcaster named %s", name)
 	// don't allow duplicated names to be created (since that will be a bad situation)
 	if b, ok := broadcastManager.broadcasters[name]; ok {
 		return b
