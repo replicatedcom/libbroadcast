@@ -1,9 +1,5 @@
 package libbroadcast
 
-import (
-	"log"
-)
-
 var globalBroadcastManager *BroadcastManager
 
 type BroadcastManager struct {
