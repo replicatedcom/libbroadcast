@@ -1,9 +1,5 @@
 package libbroadcast
 
-import (
-	"log"
-)
-
 type Broadcaster struct {
 	listeners map[string]chan interface{}
 }
@@ -36,9 +32,7 @@ func (broadcaster *Broadcaster) RemoveListener(id string) {
 func (broadcaster *Broadcaster) Send(data interface{}) {
 	for id, listener := range broadcaster.listeners {
 		go func(i string, l chan interface{}) {
-			log.Printf(" -> Delivering to listener %s", i)
 			l <- data
-			log.Printf(" -> Delivered to listener %s", i)
 		}(id, listener)
 	}
 }
