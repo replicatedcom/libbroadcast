@@ -29,6 +29,10 @@ func (broadcaster *Broadcaster) RemoveListener(id string) {
 	delete(broadcaster.listeners, id)
 }
 
+func (broadcaster *Broadcaster) HasListeners() bool {
+	return len(broadcaster.listeners) > 0
+}
+
 func (broadcaster *Broadcaster) Send(data interface{}) {
 	for id, listener := range broadcaster.listeners {
 		go func(i string, l chan interface{}) {
