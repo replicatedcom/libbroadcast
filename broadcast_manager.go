@@ -22,7 +22,7 @@ func (broadcastManager *BroadcastManager) CreateBroadcaster(name string) *Broadc
 		return b
 	}
 
-	broadcaster := newBroadcaster()
+	broadcaster := newBroadcaster(name)
 	broadcastManager.broadcasters[name] = broadcaster
 	return broadcaster
 }
