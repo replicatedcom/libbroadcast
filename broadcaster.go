@@ -61,7 +61,9 @@ func (broadcaster *Broadcaster) Send(data interface{}) {
 			case l <- data:
 				return
 			case <-time.After(30 * time.Minute):
-				log.Printf("Broadcaster %q event send timed out for channel %s", broadcaster.name, i)
+				if os.Getenv("DEBUG") != "" {
+					log.Printf("Broadcaster %q event send timed out for channel %s", broadcaster.name, i)
+				}
 			}
 		}(id, listener)
 	}
