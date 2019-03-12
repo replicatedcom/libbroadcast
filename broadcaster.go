@@ -42,8 +42,19 @@ func (broadcaster *Broadcaster) GetChan(id string) chan interface{} {
 
 func (broadcaster *Broadcaster) RemoveListener(id string) {
 	broadcaster.mutex.Lock()
-	defer broadcaster.mutex.Unlock()
+	listener := broadcaster.listeners[id]
 	delete(broadcaster.listeners, id)
+	broadcaster.mutex.Unlock()
+	if listener != nil {
+		// drain the channel
+		for {
+			select {
+			case <-listener:
+			default:
+				return
+			}
+		}
+	}
 }
 
 func (broadcaster *Broadcaster) HasListeners() bool {
